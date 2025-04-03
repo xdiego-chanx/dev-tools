@@ -204,6 +204,7 @@ def microservice(name: str, path: str = ".", js: bool = False):
         return
     
     try:
+        print("Finding npm...")
         npm_v = subprocess.run(["npm", "--version"], cwd=ms_dir, capture_output=True, text=True).stdout
         npm = "npm"
         print(f"{npm} {npm_v}")
@@ -223,7 +224,7 @@ def microservice(name: str, path: str = ".", js: bool = False):
     print("Node.js project created successfully!")
     
     print(lib.SEP)
-    print("Modifying root-level files...")
+    print("Modifying package.json...")
     with open(os.path.join(ms_dir, "package.json"), "r+", encoding="utf-8") as json_file:
         package_json = json.load(json_file)
         
@@ -233,7 +234,10 @@ def microservice(name: str, path: str = ".", js: bool = False):
         json_file.seek(0)
         json.dump(package_json, json_file, indent=4)
         json_file.truncate()
+    print("package.json successfully modified.")
 
+    print(lib.SEP)
+    print("Installing npm packages...")
     subprocess.run(
         [
             npm,
@@ -252,7 +256,10 @@ def microservice(name: str, path: str = ".", js: bool = False):
         cwd=ms_dir, capture_output=True, text=True
     )
     subprocess.run([npm, "i", "-D", "@types/node"], cwd=ms_dir, capture_output=True, text=True)
+    print("npm packages installed.")
 
+    print(lib.SEP)
+    print("Creating template files..")
     src = os.path.join(ms_dir, "src")
     os.mkdir(src)
 
@@ -275,3 +282,8 @@ def microservice(name: str, path: str = ".", js: bool = False):
     for src_file in src_files:
         with open(os.path.join(src, src_file["name"]), "w", encoding="utf-8") as file:
             file.write("\n".join(src_file["content"]))
+    print("Template files created.")
+
+    print(lib.SEP)
+    lib.log_created("microservice project", ms_dir, src_files)
+    print(lib.SEP)
