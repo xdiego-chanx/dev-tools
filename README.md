@@ -1,34 +1,18 @@
-# DevTools CLI  
+# DevTools
 
-**DevTools** is a simple CLI tool that generates pre-configured module structures (folders with template files) for various frameworks. Designed for personal use, it helps speed up project setup by automating repetitive scaffolding tasks.  
+Command-line utility for simple file and directory creation
 
-## 🚀 Features  
-- 📂 Quickly generate framework-specific module structures  
-- 📝 Pre-filled template files for consistency  
-- ⚡ Fast and easy to use via CLI  
+## Installation
 
-## 📌 Installation  
-Using Python:  
-```sh
-pip install --editable .
+You need to have Python installed on your machine to install and run this CLI.
+
+Run the following command on the project root to install the CLI as an editable package
+
+```shell
+pip install -e .
 ```
 
-## 🛠️ Usage  
-Run the CLI and specify the framework/module you want to generate:  
-```sh
-devtools <framework> new module <module-name> <path> <...options>
+To verify your installation, run
+```shell
+devtools --version
 ```
-Example:  
-```sh
-modulemaker nest new module users . --root
-```
-This will generate a `users` module with files pre-filled for NestJS, without making a separate folder for them.  
-
-### Available Frameworks  
-- `nestjs`  
-- `react`  
-- `aspnet`
-
-## 📄 License  
-MIT  
-
