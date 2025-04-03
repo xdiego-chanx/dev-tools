@@ -285,5 +285,5 @@ def microservice(name: str, path: str = ".", js: bool = False):
     print("Template files created.")
 
     print(lib.SEP)
-    lib.log_created("microservice project", ms_dir, src_files)
+    lib.log_created("microservice project", ms_dir, [file["name"] for file in src_files])
     print(lib.SEP)
