@@ -84,7 +84,7 @@ def nest_entity(
     pascal_name = lib.switch_naming_conv(name, lib.kebab, lib.pascal)
 
     js_pk_typeorm = lib.TAB + "id;"
-    ts_pk_typeorm = f"{lib.TAB}id: {"string" if use_uuid else "number"};"
+    ts_pk_typeorm = f"{lib.TAB}id!: {"string" if use_uuid else "number"};"
     orm_typeorm = [
         'import { Entity, PrimaryGeneratedColumn } from "typeorm";',
         "",
