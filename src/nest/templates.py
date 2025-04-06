@@ -5,42 +5,44 @@ import json
 def nest_module(
     name: str, lang: str, controller: bool, service: bool
 ) -> dict[str, str | list[str]]:
-    pascal_name = lib.kebab_to_pascal(name)
+    pascal_name = lib.switch_naming_conv(name, lib.kebab, lib.pascal)
     imports = ['import { Module } from "@nestjs/common";']
 
     if controller:
-        imports.append(f"import {{ {pascal_name}Controller }} from \"./{name}.controller\";")
+        imports.append(
+            f'import {{ {pascal_name}Controller }} from "./{name}.controller";'
+        )
     if service:
-        imports.append(f"import {{ {pascal_name}Service }} from \"./{name}.service\";")
+        imports.append(f'import {{ {pascal_name}Service }} from "./{name}.service";')
     if controller or service:
         imports.append("")
-     
+
     module = {
         "name": f"{name}.module.{lang}",
         "content": [
             "@Module({",
-            lib.tab() + "imports: [],",
-            f"{lib.tab()}controllers: [{f"{pascal_name}Controller" if controller else ""}],",
-            f"{lib.tab()}providers: [{f"{pascal_name}Service" if service else ""}],",
+            lib.TAB + "imports: [],",
+            f"{lib.TAB}controllers: [{f"{pascal_name}Controller" if controller else ""}],",
+            f"{lib.TAB}providers: [{f"{pascal_name}Service" if service else ""}],",
             "})",
             f"export class {pascal_name}Module {{ }}",
         ],
     }
 
     module["content"] = imports + module["content"]
-
     return module
 
+
 def nest_controller(name: str, lang: str) -> dict[str, str | list[str]]:
-    pascal_name = lib.kebab_to_pascal(name)
-    camel_name = lib.kebab_to_camel(name)
+    pascal_name = lib.switch_naming_conv(name, lib.kebab, lib.pascal)
+    camel_name = lib.switch_naming_conv(name, lib.kebab, lib.camel)
     js_content = [
         'import { Controller } from "@nestjs/common";',
         f'import {{ {pascal_name}Service }} from "./{name}.service";',
         "",
         f'@Controller("{name}")',
         f"export class {pascal_name}Controller {{",
-        f"{lib.tab()}constructor({camel_name}Service) {{}}",
+        f"{lib.TAB}constructor({camel_name}Service) {{ }}",
         "}",
     ]
     ts_content = [
@@ -49,9 +51,10 @@ def nest_controller(name: str, lang: str) -> dict[str, str | list[str]]:
         "",
         f'@Controller("{name}")',
         f"export class {pascal_name}Controller {{",
-        f"{lib.tab()}constructor(private readonly {camel_name}Service: {pascal_name}Service) {{}}",
+        f"{lib.TAB}constructor(private readonly {camel_name}Service: {pascal_name}Service) {{ }}",
         "}",
     ]
+
     return {
         "name": f"{name}.controller.{lang}",
         "content": js_content if lang == "js" else ts_content,
@@ -59,7 +62,7 @@ def nest_controller(name: str, lang: str) -> dict[str, str | list[str]]:
 
 
 def nest_service(name: str, lang: str) -> dict[str, str | list[str]]:
-    pascal_name = lib.kebab_to_pascal(name)
+    pascal_name = lib.switch_naming_conv(name, lib.kebab, lib.pascal)
     return {
         "name": f"{name}.service.{lang}",
         "content": [
@@ -67,7 +70,7 @@ def nest_service(name: str, lang: str) -> dict[str, str | list[str]]:
             "",
             "@Injectable()",
             f"export class {pascal_name}Service {{",
-            lib.tab(),
+            lib.TAB,
             "}",
         ],
     }
@@ -77,17 +80,17 @@ def nest_entity(
     name: str, lang: str, orm: str = "typeorm", use_uuid: bool = True
 ) -> dict[str, str | list[str]]:
     filename = f"{name}.entity.{lang}"
-    snake_name = lib.kebab_to_snake(name)
-    pascal_name = lib.kebab_to_pascal(name)
+    snake_name = lib.switch_naming_conv(name, lib.kebab, lib.snake)
+    pascal_name = lib.switch_naming_conv(name, lib.kebab, lib.pascal)
 
-    js_pk_typeorm = lib.tab() + "id;"
-    ts_pk_typeorm = f"{lib.tab()}id: {"string" if use_uuid else "number"};"
+    js_pk_typeorm = lib.TAB + "id;"
+    ts_pk_typeorm = f"{lib.TAB}id: {"string" if use_uuid else "number"};"
     orm_typeorm = [
         'import { Entity, PrimaryGeneratedColumn } from "typeorm";',
         "",
         f'@Entity("{snake_name}")',
         f"export class {pascal_name} {{",
-        f"{lib.tab()}@PrimaryGeneratedColumn({"\"uuid\"" if use_uuid else ""})",
+        f"{lib.TAB}@PrimaryGeneratedColumn({"\"uuid\"" if use_uuid else ""})",
         js_pk_typeorm if lang == "js" else ts_pk_typeorm,
         "}",
     ]
@@ -97,9 +100,9 @@ def nest_entity(
         "",
         "@Table",
         f"export class {pascal_name} extends Model {{",
-        lib.tab() + "@PrimaryKey",
-        f"{lib.tab()}{"@Default(DataType.UUIDV4)" if use_uuid else "@AutoIncrement"}",
-        f"{lib.tab()}@Column({"{type: DataType.UUID}" if use_uuid else ""})",
+        lib.TAB + "@PrimaryKey",
+        f"{lib.TAB}{"@Default(DataType.UUIDV4)" if use_uuid else "@AutoIncrement"}",
+        f"{lib.TAB}@Column({"{type: DataType.UUID}" if use_uuid else ""})",
         js_pk_typeorm if lang == "js" else ts_pk_typeorm,
         "}",
     ]
@@ -115,17 +118,16 @@ def nest_main(lang: str) -> dict[str, str | list[str]]:
     return {
         "name": f"main.{lang}",
         "content": [
-            "import { NestFactory } from \"@nestjs/core\";",
-            "import { AppModule } from \"./app.module\";",
+            'import { NestFactory } from "@nestjs/core";',
+            'import { AppModule } from "./app.module";',
             "",
             "(async () => {",
-            lib.tab() + "const app = await NestFactory.create(AppModule);",
-            lib.tab(),
-            lib.tab() + 'const host = process.env.HOST ?? "127.0.0.1";',
-            lib.tab() + "const port = process.env.PORT ?? 3000;",
-            lib.tab(),
-            lib.tab()
-            + 'await app.listen(port, () => console.log("Server is listening at http://%s:%d/", host, port));',
+            f"{lib.TAB}const app = await NestFactory.create(AppModule);",
+            lib.TAB,
+            f'{lib.TAB}const host = process.env.HOST ?? "127.0.0.1";',
+            f"{lib.TAB}const port = process.env.PORT ?? 3000;",
+            lib.TAB,
+            f'{lib.TAB}await app.listen(port, () => console.log("Server is listening at http://%s:%d/", host, port));',
             "})();",
         ],
     }
@@ -164,6 +166,8 @@ def nest_tsconfig() -> str:
                 "moduleResolution": "node",
                 "experimentalDecorators": True,
                 "emitDecoratorMetadata": True,
+                "allowJs": True,
+                "checkJs": False,
                 "strict": True,
                 "skipLibCheck": True,
                 "esModuleInterop": True,
@@ -178,6 +182,7 @@ def nest_tsconfig() -> str:
         indent=4,
     )
 
+
 def nest_gitignore() -> list[str]:
     return [
         "packages/*/package-lock.json",
@@ -185,6 +190,9 @@ def nest_gitignore() -> list[str]:
         "",
         "# dependencies",
         "node_modules/",
+        "",
+        "# Distribution files",
+        "dist/",
         "",
         "# IDE",
         "/.idea",
