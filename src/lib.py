@@ -177,5 +177,5 @@ def find_npm() -> tuple[str] | bool:
 abort_msg = lambda: print("\033[31mOperation was aborted.\033[0m")
 
 
-SEP = "=" * 50
+SEP = "=" * 100
 TAB = "    "
