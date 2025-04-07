@@ -174,8 +174,8 @@ def find_npm() -> tuple[str] | bool:
         except FileNotFoundError:
             return False
 
-abort_msg = lambda: print("\033[31mOperation was aborted.\033[0m")
-
+warn = lambda string: print(f"\033[93m{string}\033[0m")
+error = lambda string: print(f"\033[31m{string}\033[0m")
 
 SEP = "=" * 100
 TAB = "    "

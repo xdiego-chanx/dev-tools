@@ -19,7 +19,7 @@ def main():
     nest_feature_parser.add_argument("--no-controller", action="store_true", help="Skip controller creation")
     nest_feature_parser.add_argument("--no-service", action="store_true", help="Skip service creation")
     nest_feature_parser.add_argument("--orm", type=str, default="typeorm", help="ORM to use (default: typeorm)")
-    nest_feature_parser.add_argument("--use-uuid", action="store_true", default=True, help="Use UUIDs (default: true)")
+    nest_feature_parser.add_argument("--no-uuid", action="store_true", default=True, help="Use auto-incrementing integers instead of UUIDs (default: false)")
 
     # devtools nest module
     nest_module_parser = nest_subparsers.add_parser("module", help="Create a NestJS module")
@@ -41,7 +41,7 @@ def main():
     nest_entity_parser.add_argument("path", type=str, help="Target directory")
     nest_entity_parser.add_argument("--js", action="store_true", help="Use JavaScript instead of TypeScript")
     nest_entity_parser.add_argument("--orm", type=str, default="typeorm", help="ORM to use (default: typeorm)")
-    nest_entity_parser.add_argument("--use-uuid", action="store_true", default=True, help="Use UUIDs (default: true)")
+    nest_entity_parser.add_argument("--no-uuid", action="store_true", default=True, help="Use auto-incrementing integers instead of UUIDs (default: false)")
 
     # devtools nest microservice
     nest_microservice_parser = nest_subparsers.add_parser("microservice", help="Create a NestJS microservice project")
@@ -77,7 +77,7 @@ def main():
             react.component(args.path, args.css, args.tsx)
     if args.command == "nest": # devtools nest
         if args.nest_command == "feature": # devtools nest feature
-            nest.feature(args.path, args.orm, args.use_uuid, args.js, args.no_entity, args.no_controller, args.no_service)
+            nest.feature(args.path, args.orm, not args.no_uuid, args.js, args.no_entity, args.no_controller, args.no_service)
         elif args.nest_command == "module": # devtools nest module
             nest.module(args.path, args.js)
         elif args.nest_command == "controller": # devtools nest controller
@@ -85,7 +85,7 @@ def main():
         elif args.nest_command == "service": # devtools nest service
             nest.service(args.path, args.js)
         elif args.nest_command == "entity": # devtools nest entity
-            nest.entity(args.path, args.js, args.orm, args.use_uuid)
+            nest.entity(args.path, args.js, args.orm, not args.no_uuid)
         elif args.nest_command == "microservice": # devtools nest microservice
             nest.microservice(args.path, args.js)
         

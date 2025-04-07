@@ -22,7 +22,7 @@ def view(path: str, css: bool=False, layout: bool=False, tsx: bool=False) -> Non
 
         lib.log_created("view", path, [file["name"] for file in files])
     except KeyboardInterrupt:
-        lib.abort_msg()
+        lib.error("Operation was aborted.")
 
 def component(path: str, css: bool=False, new_dir: bool=False, tsx: bool=False) -> None:
     try:
@@ -41,4 +41,4 @@ def component(path: str, css: bool=False, new_dir: bool=False, tsx: bool=False) 
 
         lib.log_created("module", path, [file["name"] for file in files])
     except KeyboardInterrupt:
-        lib.abort_msg()
+        lib.error("Operation was aborted.")

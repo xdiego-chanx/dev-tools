@@ -37,11 +37,11 @@ def feature(
 
         lib.log_created("feature", path, [file["name"] for file in files])
     except KeyboardInterrupt:
-        lib.abort_msg()
+        lib.error("Operation was aborted.")
 
 
 def module(path: str, js: bool = False) -> None:
-    try: 
+    try:
         name, path = lib.split_path(path)
         file_type = "module"
 
@@ -55,7 +55,7 @@ def module(path: str, js: bool = False) -> None:
 
         lib.log_created(file_type, path, [template["name"]])
     except KeyboardInterrupt:
-        lib.abort_msg()
+        lib.error("Operation was aborted.")
 
 
 def controller(path: str, js: bool = False) -> None:
@@ -65,60 +65,65 @@ def controller(path: str, js: bool = False) -> None:
 
         lang = "js" if js else "ts"
 
-        if not os.path.exists(os.path.join(path, f"{name}.module.{lang}")):
-            raise ModuleNotFoundError(
-                f"A controller cannot be attached to non-existent module '{name}.module.{lang}'."
+        module_exists = os.path.exists(os.path.join(path, f"{name}.module.{lang}"))
+
+        if not module_exists:
+            lib.warn(
+                f"Controller cannot be used without being attached to non-existent module '{name}.module.{lang}'. Consider making it before implementing the controller"
             )
+            if not os.path.exists(path):
+                os.makedirs(path)
 
         template = templates.nest_controller(name, lang)
 
         lib.write_files([template], path)
 
-        lib.modify_module(os.path.join(path, name, f"{name}.module.{lang}", file_type))
+        if module_exists:
+            lib.modify_module(os.path.join(path, name, f"{name}.module.{lang}"), file_type)
 
         lib.log_created(file_type, path, [template["name"]])
     except KeyboardInterrupt:
-        lib.abort_msg()
+        lib.error("Operation was aborted.")
+
 
 def service(path: str, js: bool = False) -> None:
-    try: 
+    try:
         name, path = lib.split_path(path)
         file_type = "service"
         lang = "js" if js else "ts"
 
-        if not os.path.exists(os.path.join(path, f"{name}.module.{lang}")):
-            raise ModuleNotFoundError(
-                f"A service cannot be attached to non-existent module '{name}.module.{lang}'."
-            )
+        module_exists = os.path.exists(os.path.join(path, f"{name}.module.{lang}"))
 
+        if not module_exists:
+            lib.warn(
+                f"Service cannot be used without being attached to non-existent module '{name}.module.{lang}'. Consider making it before implementing the service."
+            )
+            if not os.path.exists(path):
+                os.makedirs(path)
         template = templates.nest_service(name, lang)
 
         lib.write_files([template], path)
 
-        lib.modify_module(os.path.join(path, name, f"{name}.module.{lang}", file_type))
+        if module_exists:
+            lib.modify_module(os.path.join(path, name, f"{name}.module.{lang}"), file_type)
 
         lib.log_created(file_type, path, [template["name"]])
     except KeyboardInterrupt:
-        lib.abort_msg()
+        lib.error("Operation was aborted.")
 
 
 def entity(
-    name: str,
-    path: str = ".",
+    path: str,
     js: bool = False,
     orm: str = "tyeorm",
     use_uuid: bool = True,
 ):
     try:
         name, path = lib.split_path(path)
-        pascal_name = lib.switch_naming_conv(name, lib.kebab, lib.pascal)
 
         lang = "js" if js else "ts"
 
         if not os.path.exists(os.path.join(path)):
-            print(
-                f"Consider making a module '{name}.module.{lang}' at '{path}' before using entity '{pascal_name}'."
-            )
             os.makedirs(path)
 
         template = templates.nest_entity(name, lang, orm, use_uuid)
@@ -126,7 +131,8 @@ def entity(
 
         lib.log_created("entity", path, [template["name"]])
     except KeyboardInterrupt:
-        lib.abort_msg()
+        lib.error("Operation was aborted.")
+
 
 def microservice(path: str, js: bool = False) -> None:
     try:
@@ -139,7 +145,7 @@ def microservice(path: str, js: bool = False) -> None:
         if node_version:
             print(f"Node.js v{node_version}")
         else:
-            print("Node.js not found on this machine.")
+            lib.error("Node.js not found on this machine.")
             return
 
         npm, npm_version = lib.find_npm()
@@ -147,7 +153,7 @@ def microservice(path: str, js: bool = False) -> None:
         if npm_version:
             print(f"npm v{npm_version}")
         else:
-            print("npm not found on this machine.")
+            lib.error("npm not found on this machine.")
             return
 
         if not os.path.exists(path):
@@ -193,12 +199,14 @@ def microservice(path: str, js: bool = False) -> None:
         if not js:
             subprocess.run(
                 [
-                    npm, "i", "-D",
+                    npm,
+                    "i",
+                    "-D",
                     "@types/node",
                     "typescript",
                     "ts-node",
-                    "tsconfig-paths"
-                    ],
+                    "tsconfig-paths",
+                ],
                 cwd=path,
                 capture_output=True,
                 text=True,
@@ -210,7 +218,9 @@ def microservice(path: str, js: bool = False) -> None:
         print("Creating template files..")
 
         if os.path.exists(src):
-            print(f"Error: '{src}' already exists. Aborting to avoid overwriting files.")
+            print(
+                f"Error: '{src}' already exists. Aborting to avoid overwriting files."
+            )
             return
 
         os.mkdir(src)
@@ -234,7 +244,9 @@ def microservice(path: str, js: bool = False) -> None:
         print("Template files created.")
 
         print(lib.SEP)
-        lib.log_created("microservice project", path, [file["name"] for file in src_files])
+        lib.log_created(
+            "microservice project", path, [file["name"] for file in src_files]
+        )
         print(lib.SEP)
     except KeyboardInterrupt:
-        lib.abort_msg()
+        lib.error("Operation was aborted.")
