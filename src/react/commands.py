@@ -2,9 +2,9 @@ import os
 from . import templates
 from .. import lib
 
-def view(path: str, css: bool=False, layout: bool=False, tsx: bool=False) -> None:
+def view(path: str, css: bool=False, layout: bool=False, tsx: bool=False, flat: bool = False) -> None:
     try:
-        name, path = lib.split_path(path)
+        name, path = lib.split_path(path, flat)
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -24,9 +24,14 @@ def view(path: str, css: bool=False, layout: bool=False, tsx: bool=False) -> Non
     except KeyboardInterrupt:
         lib.error("Operation was aborted.")
 
-def component(path: str, css: bool=False, new_dir: bool=False, tsx: bool=False) -> None:
+def component(
+        path: str,
+        css: bool = False,
+        tsx: bool = False,
+        flat: bool = False
+        ) -> None:
     try:
-        name, path = lib.split_path(path)
+        name, path = lib.split_path(path, flat)
 
         if not os.path.exists(path):
             os.makedirs(path)

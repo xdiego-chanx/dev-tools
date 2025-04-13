@@ -13,9 +13,10 @@ def feature(
     no_entity: bool = True,
     no_controller: bool = False,
     no_service: bool = False,
+    flat: bool = False
 ) -> None:
     try:
-        name, path = lib.split_path(path)
+        name, path = lib.split_path(path, flat)
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -40,9 +41,9 @@ def feature(
         lib.error("Operation was aborted.")
 
 
-def module(path: str, js: bool = False) -> None:
+def module(path: str, js: bool = False, flat: bool = False) -> None:
     try:
-        name, path = lib.split_path(path)
+        name, path = lib.split_path(path, flat)
         file_type = "module"
 
         if not os.path.exists(path):
@@ -58,9 +59,9 @@ def module(path: str, js: bool = False) -> None:
         lib.error("Operation was aborted.")
 
 
-def controller(path: str, js: bool = False) -> None:
+def controller(path: str, js: bool = False, flat: bool = False) -> None:
     try:
-        name, path = lib.split_path(path)
+        name, path = lib.split_path(path, flat)
         file_type = "controller"
 
         lang = "js" if js else "ts"
@@ -69,7 +70,7 @@ def controller(path: str, js: bool = False) -> None:
 
         if not module_exists:
             lib.warn(
-                f"Controller cannot be used without being attached to non-existent module '{name}.module.{lang}'. Consider making it before implementing the controller"
+                f"Controller cannot be used without being attached to a module. If you wish to create module '{name}.module.{lang}', use command 'devtools nest module {name}'."
             )
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -86,9 +87,9 @@ def controller(path: str, js: bool = False) -> None:
         lib.error("Operation was aborted.")
 
 
-def service(path: str, js: bool = False) -> None:
+def service(path: str, js: bool = False, flat: bool = False) -> None:
     try:
-        name, path = lib.split_path(path)
+        name, path = lib.split_path(path, flat)
         file_type = "service"
         lang = "js" if js else "ts"
 
@@ -96,7 +97,7 @@ def service(path: str, js: bool = False) -> None:
 
         if not module_exists:
             lib.warn(
-                f"Service cannot be used without being attached to non-existent module '{name}.module.{lang}'. Consider making it before implementing the service."
+                f"Service cannot be used without being attached to a module. If you wish to create module '{name}.module.{lang}', use command 'devtools nest module {name}'."
             )
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -117,9 +118,10 @@ def entity(
     js: bool = False,
     orm: str = "tyeorm",
     use_uuid: bool = True,
+    flat: bool = False
 ):
     try:
-        name, path = lib.split_path(path)
+        name, path = lib.split_path(path, flat)
 
         lang = "js" if js else "ts"
 
