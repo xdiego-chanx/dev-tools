@@ -1,6 +1,7 @@
 import os
 from . import templates
 from .. import lib
+from ..lib import console
 
 def view(path: str, css: bool=False, layout: bool=False, tsx: bool=False, flat: bool = False) -> None:
     try:
@@ -20,9 +21,9 @@ def view(path: str, css: bool=False, layout: bool=False, tsx: bool=False, flat: 
         
         lib.write_files(files, path)
 
-        lib.log_created("view", path, [file["name"] for file in files])
+        console.log_created("view", path, [file["name"] for file in files])
     except KeyboardInterrupt:
-        lib.error("Operation was aborted.")
+        console.error("Operation was aborted.")
 
 def component(
         path: str,
@@ -44,6 +45,6 @@ def component(
 
         lib.write_files(files, path)
 
-        lib.log_created("module", path, [file["name"] for file in files])
+        console.log_created("module", path, [file["name"] for file in files])
     except KeyboardInterrupt:
-        lib.error("Operation was aborted.")
+        console.error("Operation was aborted.")

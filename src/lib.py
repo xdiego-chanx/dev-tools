@@ -40,14 +40,32 @@ def switch_naming_conv(string: str, from_f: str, to_f: str) -> str:
 def split_at_upper(string: str) -> list[str]:
     words = []
     start = 0
+    string = string.lstrip("_")
 
-    for i, char in enumerate(string):
-        if i > 0 and char.isupper() or char.isnumeric():
+    for i in range(1, len(string)):
+        curr = string[i]
+        last = string[i - 1]
+        if i+1 < len(string):
+            next = string[i+1]
+        else: 
+            next = None
+        
+        if curr.isdigit() and not last.isdigit():
             words.append(string[start:i])
             start = i
-
+        elif curr.isupper():
+            if last.islower():
+                words.append(string[start:i])
+                start = i
+            elif next is not None and next.islower():
+                words.append(string[start:i])
+                start = i
+            elif next is not None and next.isupper():
+                continue
     words.append(string[start:])
+    print(words)
     return words
+
 
 camel_to_spaced = lambda string: split_at_upper(string)
 
@@ -69,14 +87,6 @@ spaced_to_snake = lambda array: "_".join(array).lower()
 
 spaced_to_kebab = lambda array: "-".join(array).lower()
 
-def log_created(type: str, path: str, with_files: list[str]) -> None:
-    cap_type = type[0].upper() + type[1:].lower()
-    conj_files = "file" if len(with_files) == 1 else "files"
-    print(
-        f"{cap_type} '{path}' was created with {conj_files} '{"', '".join(with_files)}'."
-    )
-
-
 def split_path(path_input: str, flat: bool = False) -> tuple[str]:
     name = os.path.basename(path_input)
     path = (
@@ -93,36 +103,35 @@ def write_files(templates: dict[str, str | list[str]], path: str) -> None:
             file.write("\n".join(template["content"]))
 
 
-def modify_module(path: str, add: str) -> None:
-    pascal_add = switch_naming_conv(add, kebab, pascal)
-    array_names = {"controller": "controllers", "service": "providers"}
-    decl_found = False
+def modify_module(module_path: str, ft_name: str, filetype: str) -> None:
+    class_name = f"{switch_naming_conv(ft_name, kebab, pascal)}{switch_naming_conv(filetype, kebab, pascal)}"
+    import_path = f"./{ft_name}.{filetype}"
     module_index = -1
-    file, path = split_path(path)
-    name, _ = os.path.splitext(file)
+    decl_array_found = False
 
-    pascal_name = switch_naming_conv(name, kebab, pascal)
+    array_names = {
+        "controller": "controllers",
+        "service": "providers"
+    }
 
-    with open(path, "r+", encoding="utf-8") as module:
+    with open(module_path, "r+", encoding="utf-8") as module:
         lines = module.readlines()
 
         for i, line in enumerate(lines):
             if line.strip() == "@Module({":
                 module_index = i
-            if line.strip().startswith(array_names[add]):
-                decl_found = True
+            if line.strip().startswith(array_names[filetype]):
+                decl_array_found = True
                 lines[i] = (
-                    line.rstrip().rstrip("]") + f", {pascal_name}{pascal_add}],\n"
-                )
+                    line.rstrip().rstrip(",").rstrip("]") + f", {class_name}],\n")
                 break
-
-        if not decl_found:
+        if not decl_array_found:
             lines.insert(
                 module_index + 1,
-                f"{TAB}{array_names[add]}: [{pascal_name}{pascal_add}],\n",
+                f"{TAB}{array_names[filetype]}: [{class_name}],\n",
             )
 
-        import_stmt = f'import {{ {pascal_name}{pascal_add} }} from "./{name}.{add}";\n'
+        import_stmt = f"import {{ {class_name} }} from \"{import_path}\";\n"
 
         if import_stmt not in lines:
             lines.insert(1, import_stmt)
@@ -174,8 +183,34 @@ def find_npm() -> tuple[str] | bool:
         except FileNotFoundError:
             return False
 
-warn = lambda string: print(f"\033[93m{string}\033[0m")
-error = lambda string: print(f"\033[31m{string}\033[0m")
+class Console:
+    __WHITE = "\033[97m"
+    __BLUE = "\033[96m"
+    __YELLOW = "\033[93m"
+    __RED = "\033[31"
+    __STOP = "\033[0m"
+
+    def log_created(self, type: str, path: str, with_files: list[str]) -> None:
+        cap_type = type[0].upper() + type[1:].lower()
+        conj_files = "file" if len(with_files) == 1 else "files"
+        print(
+            f"{self.__WHITE}{cap_type} '{path}' was created with {conj_files} '{"', '".join(with_files)}'.{self.__STOP}"
+        )
+
+    def log(self, x: str) -> None:
+        print(f"{self.__WHITE}{x}{self.__STOP}")
+
+    def info(self, x: str) -> None:
+        print(f"{self.__BLUE}{x}{self.__STOP}")
+
+    def warn(self, x: str) -> None:
+        print(f"{self.__YELLOW}{x}{self.__STOP}")
+
+    def error(self, x: str) -> None:
+        print(f"{self.__RED}{x}{self.__STOP}")
+
+
+console = Console()
 
 SEP = "=" * 100
 TAB = "    "
