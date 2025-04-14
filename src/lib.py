@@ -156,18 +156,24 @@ def rewrite_package_json(at: str, package_json: dict[str | Any]) -> None:
 
 def find_node() -> str | bool:
     try:
-        print("Finding node...")
         node_v = subprocess.run(
             ["node", "--version"], capture_output=True, text=True
         ).stdout
         return node_v.lstrip("v")
     except FileNotFoundError:
         return False
-
+    
+def find_bun() -> str | bool:
+    try: 
+        bun_v = subprocess.run(
+            ["bun", "--version"], capture_output=True, text=True
+        ).stdout
+        return bun_v
+    except FileNotFoundError:
+        return False
 
 def find_npm() -> tuple[str] | bool:
     try:
-        print("Finding npm...")
         npm_v = subprocess.run(
             ["npm", "--version"], capture_output=True, text=True
         ).stdout
@@ -187,7 +193,8 @@ class Console:
     __WHITE = "\033[97m"
     __BLUE = "\033[96m"
     __YELLOW = "\033[93m"
-    __RED = "\033[31"
+    __RED = "\033[31m"
+    __GREEN = "\033[92m"
     __STOP = "\033[0m"
 
     def log_created(self, type: str, path: str, with_files: list[str]) -> None:
@@ -203,6 +210,9 @@ class Console:
     def info(self, x: str) -> None:
         print(f"{self.__BLUE}{x}{self.__STOP}")
 
+    def debug(self, x: str) -> None:
+        print(f"{self.__GREEN}{x}{self.__STOP}")
+
     def warn(self, x: str) -> None:
         print(f"{self.__YELLOW}{x}{self.__STOP}")
 
@@ -212,5 +222,5 @@ class Console:
 
 console = Console()
 
-SEP = "=" * 100
+SEP = "=" * 75
 TAB = "    "
