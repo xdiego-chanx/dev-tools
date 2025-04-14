@@ -186,6 +186,7 @@ def microservice(path: str, js: bool = False) -> None:
 
         package_json["type"] = "module"
         package_json["main"] = f"src/main.{lang}"
+        package_json["scripts"]["dev"] = "nodemon --exec tsx src/main.ts"
 
         lib.rewrite_package_json(at=path, package_json=package_json)
 
@@ -219,8 +220,9 @@ def microservice(path: str, js: bool = False) -> None:
                     "-D",
                     "@types/node",
                     "typescript",
-                    "ts-node",
+                    "tsx",
                     "tsconfig-paths",
+                    "nodemon"
                 ],
                 cwd=path,
                 capture_output=True,
