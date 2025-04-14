@@ -1,8 +1,9 @@
 import os
 from . import templates
 from .. import lib
+from ..lib import console
 import subprocess
-import json
+from glob import glob
 
 
 def feature(
@@ -36,15 +37,15 @@ def feature(
 
         lib.write_files(files, path)
 
-        lib.log_created("feature", path, [file["name"] for file in files])
+        console.log_created("feature", path, [file["name"] for file in files])
     except KeyboardInterrupt:
-        lib.error("Operation was aborted.")
+        console.error("Operation was aborted.")
 
 
 def module(path: str, js: bool = False, flat: bool = False) -> None:
     try:
         name, path = lib.split_path(path, flat)
-        file_type = "module"
+        filetype = "module"
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -54,22 +55,23 @@ def module(path: str, js: bool = False, flat: bool = False) -> None:
         template = templates.nest_module(name, lang, controller=False, service=False)
         lib.write_files([template], path)
 
-        lib.log_created(file_type, path, [template["name"]])
+        console.log_created(filetype, path, [template["name"]])
     except KeyboardInterrupt:
-        lib.error("Operation was aborted.")
+        console.error("Operation was aborted.")
 
 
 def controller(path: str, js: bool = False, flat: bool = False) -> None:
     try:
         name, path = lib.split_path(path, flat)
-        file_type = "controller"
+        filetype = "controller"
 
         lang = "js" if js else "ts"
 
-        module_exists = os.path.exists(os.path.join(path, f"{name}.module.{lang}"))
+        all_modules = glob(os.path.join(path, "*.module.ts"))
+        module_exists = len(all_modules) > 0
 
         if not module_exists:
-            lib.warn(
+            console.warn(
                 f"Controller cannot be used without being attached to a module. If you wish to create module '{name}.module.{lang}', use command 'devtools nest module {name}'."
             )
             if not os.path.exists(path):
@@ -80,24 +82,29 @@ def controller(path: str, js: bool = False, flat: bool = False) -> None:
         lib.write_files([template], path)
 
         if module_exists:
-            lib.modify_module(os.path.join(path, name, f"{name}.module.{lang}"), file_type)
+            if len(all_modules) == 1:
+                module_name = os.path.basename(all_modules[0])
+                lib.modify_module("", name, filetype)
+            else:
+                console.warn(f"More than one module file has been found in '{path}'. Controller will not be attached to a module.")
 
-        lib.log_created(file_type, path, [template["name"]])
+        console.log_created(filetype, path, [template["name"]])
     except KeyboardInterrupt:
-        lib.error("Operation was aborted.")
+        console.error("Operation was aborted.")
 
 
 def service(path: str, js: bool = False, flat: bool = False) -> None:
     try:
         name, path = lib.split_path(path, flat)
-        file_type = "service"
+        filetype = "service"
         lang = "js" if js else "ts"
 
-        module_exists = os.path.exists(os.path.join(path, f"{name}.module.{lang}"))
+        all_modules = glob(os.path.join(path, "*.module.ts"))
+        module_exists = len(all_modules) > 0
 
         if not module_exists:
-            lib.warn(
-                f"Service cannot be used without being attached to a module. If you wish to create module '{name}.module.{lang}', use command 'devtools nest module {name}'."
+            console.warn(
+                f"{filetype.capitalize()} cannot be used without being attached to a module. If you wish to create module '{name}.module.{lang}', use command 'devtools nest module {name}'."
             )
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -106,11 +113,14 @@ def service(path: str, js: bool = False, flat: bool = False) -> None:
         lib.write_files([template], path)
 
         if module_exists:
-            lib.modify_module(os.path.join(path, name, f"{name}.module.{lang}"), file_type)
+            if len(all_modules) == 1:
+                lib.modify_module(all_modules[0], name, filetype)
+            else:
+                console.warn(f"More than one module file has been found in '{path}'. Service will not be attached to a module.")
 
-        lib.log_created(file_type, path, [template["name"]])
+        console.log_created(filetype, path, [template["name"]])
     except KeyboardInterrupt:
-        lib.error("Operation was aborted.")
+        console.error("Operation was aborted.")
 
 
 def entity(
@@ -131,9 +141,9 @@ def entity(
         template = templates.nest_entity(name, lang, orm, use_uuid)
         lib.write_files([template], path)
 
-        lib.log_created("entity", path, [template["name"]])
+        console.log_created("entity", path, [template["name"]])
     except KeyboardInterrupt:
-        lib.error("Operation was aborted.")
+        console.error("Operation was aborted.")
 
 
 def microservice(path: str, js: bool = False) -> None:
@@ -142,32 +152,35 @@ def microservice(path: str, js: bool = False) -> None:
         src = os.path.join(path, "src")
         lang = "js" if js else "ts"
 
+        console.log("Finding Node.js and npm...")
+
         node_version = lib.find_node()
 
         if node_version:
-            print(f"Node.js v{node_version}")
+            console.info(f"Node.js v{node_version}")
         else:
-            lib.error("Node.js not found on this machine.")
+            console.error("Node.js not found on this machine.")
             return
 
         npm, npm_version = lib.find_npm()
 
         if npm_version:
-            print(f"npm v{npm_version}")
+            console.info(f"npm v{npm_version}")
         else:
-            lib.error("npm not found on this machine.")
+            console.error("npm not found on this machine.")
             return
 
         if not os.path.exists(path):
             os.makedirs(path)
 
-        print(lib.SEP)
-        print("Creating Node.js project...")
+        console.log(lib.SEP)
+        console.log("Creating Node.js project...")
 
         subprocess.run([npm, "init", "-y"], cwd=path, capture_output=True, text=True)
+        console.info("Node.js project successfully created!")
 
-        print(lib.SEP)
-        print("Modifying package.json...")
+        console.log(lib.SEP)
+        console.log("Modifying package.json...")
 
         package_json = lib.read_package_json(at=path)
 
@@ -176,10 +189,10 @@ def microservice(path: str, js: bool = False) -> None:
 
         lib.rewrite_package_json(at=path, package_json=package_json)
 
-        print("package.json successfully modified.")
+        console.info("package.json successfully modified!")
 
-        print(lib.SEP)
-        print("Installing npm packages...")
+        console.log(lib.SEP)
+        console.log("Installing npm packages...")
 
         subprocess.run(
             [
@@ -214,18 +227,19 @@ def microservice(path: str, js: bool = False) -> None:
                 text=True,
             )
 
-        print("npm packages installed.")
+        console.info("npm packages sucessfully installed!")
 
-        print(lib.SEP)
-        print("Creating template files..")
+        console.log(lib.SEP)
+        console.log("Creating template files..")
 
         if os.path.exists(src):
-            print(
-                f"Error: '{src}' already exists. Aborting to avoid overwriting files."
-            )
+            console.error(f"Path '{src}' already exists. Aborting to avoid overwriting files.")
             return
 
         os.mkdir(src)
+
+        console.log(lib.SEP)
+        console.log("Creating template files...")
 
         root_files = [
             {"name": ".gitignore", "content": templates.nest_gitignore()},
@@ -243,12 +257,12 @@ def microservice(path: str, js: bool = False) -> None:
         lib.write_files(root_files, path)
 
         lib.write_files(src_files, src)
-        print("Template files created.")
+        console.info("Template files created!")
 
-        print(lib.SEP)
-        lib.log_created(
+        console.log(lib.SEP)
+        console.log_created(
             "microservice project", path, [file["name"] for file in src_files]
         )
         print(lib.SEP)
     except KeyboardInterrupt:
-        lib.error("Operation was aborted.")
+        console.error("Operation was aborted.")
