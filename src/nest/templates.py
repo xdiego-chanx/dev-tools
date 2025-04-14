@@ -133,7 +133,25 @@ def nest_main(lang: str) -> dict[str, str | list[str]]:
     }
 
 
-def nest_dockerfile() -> list[str]:
+def nest_bun_dockerfile() -> list[str]:
+    return [
+        "# auto-generated Dockerfile",
+        "FROM oven/bun:1 AS prod",
+        "",
+        "WORKDIR /app",
+        "",
+        "COPY bun.lock /app/",
+        "COPY package.json /app/",
+        "RUN bun install --frozen-lockfile",
+        "",
+        "COPY . /app",
+        "",
+        "ENV NODE_ENV=production",
+        'CMD ["bun", "src/index.ts"]'
+    ]
+
+
+def nest_node_dockerfile() -> list[str]:
     return [
         "# auto-generated Dockerfile",
         "FROM node:22-alpine AS build",
@@ -161,20 +179,27 @@ def nest_tsconfig() -> str:
     return json.dumps(
         {
             "compilerOptions": {
-                "target": "ES2020",
-                "module": "ES6",
-                "moduleResolution": "node",
+                "target": "ESNext",
+                "module": "ESNext",
+                "moduleDetection": "force",
+                "moduleResolution": "bundler",
+                "allowImportingTsExtensions": True,
+                "verbatimModuleSyntax": True,
+                "noEmit": True,
                 "experimentalDecorators": True,
                 "emitDecoratorMetadata": True,
-                "allowJs": True,
-                "checkJs": False,
-                "strict": True,
-                "skipLibCheck": True,
-                "esModuleInterop": True,
-                "forceConsistentCasingInFileNames": True,
-                "outDir": "./dist",
                 "baseUrl": "./",
                 "paths": {"@/*": ["src/*"]},
+                "strict": True,
+                "skipLibCheck": True,
+                "noFallthroughCasesInSwitch": True,
+                "strictNullChecks": True,
+                "forceConsistentCasingInFileNames": True,
+                "allowSyntheticDefaultImports": True,
+                "noImplicitAny": False,
+                "noUnusedLocals": False,
+                "noUnusedParameters": False,
+                "noPropertyAccessFromIndexSignature": False,
             },
             "include": ["src/**/*.ts"],
             "exclude": ["node_modules", "dist"],

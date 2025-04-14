@@ -51,6 +51,7 @@ def main():
     # devtools nest microservice
     nest_microservice_parser = nest_subparsers.add_parser("microservice", help="Create a NestJS microservice project")
     nest_microservice_parser.add_argument("path", type=str, help="Target directory")
+    nest_microservice_parser.add_argument("--package-manager", "-pm", type=str,choices=["npm", "bun"], default="npm", help="Package manager (choose from 'npm', 'bun')")
     nest_microservice_parser.add_argument("--js", action="store_true", help="Use JavaScript instead of TypeScript")
     
     # devtools react
@@ -94,7 +95,7 @@ def main():
         elif args.nest_command == "entity": # devtools nest entity
             nest.entity(args.path, args.js, args.orm, not args.no_uuid, args.flat)
         elif args.nest_command == "microservice": # devtools nest microservice
-            nest.microservice(args.path, args.js)
+            nest.microservice(args.path, args.package_manager, args.js)
         
     
 if __name__ == "__main__":
