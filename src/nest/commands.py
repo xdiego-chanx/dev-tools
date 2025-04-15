@@ -160,7 +160,8 @@ def microservice(path: str, pm: str, js: bool) -> None:
             "@nestjs/common",
             "@nestjs/platform-express",
             "@nestjs/microservices",
-            "reflect-metadata" "rxjs",
+            "reflect-metadata",
+            "rxjs",
             "class-validator",
             "class-transformer",
         ]
@@ -200,7 +201,7 @@ def microservice(path: str, pm: str, js: bool) -> None:
             runtime_info["packages"] = common_pkg
             runtime_info["dev_packages"] = common_dev_pkg + npm_dev_pkg
             runtime_info["dev_script"] = "nodemon --exec tsx src/main.ts"
-            runtime_info["dockerfile"] = templates.nest_npm_dockerfile()
+            runtime_info["dockerfile"] = templates.nest_node_dockerfile()
 
         elif pm == "bun":
             console.log("Finding Bun...")
@@ -230,6 +231,7 @@ def microservice(path: str, pm: str, js: bool) -> None:
                 cwd=path,
                 capture_output=True,
             )
+            console.info(f"{runtime_info["name"]} project successfully created!")
         except:
             console.error(f"{runtime_info["name"]} project creation was aborted due to an error.")
             return
@@ -258,7 +260,7 @@ def microservice(path: str, pm: str, js: bool) -> None:
             else: 
                 try: 
                     console.log(lib.SEP)
-                    console.log(f"Installing {runtime_info["package_manager"].rstrip(".cmd")} packages...")
+                    console.log(f"Installing {runtime_info["package_manager"].removesuffix(".cmd")} packages...")
 
                     subprocess.run(
                         ([runtime_info["package_manager"], runtime_info["package_install"]] + runtime_info["packages"]),
