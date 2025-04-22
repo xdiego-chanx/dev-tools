@@ -1,9 +1,4 @@
-import sqlite3
-
+import json
 
 class ConfigureUser:
-    
-    def __init__(self):
-        self.conn = sqlite3.connect("../db.sqlite3")
-        self.cursor = self.conn.cursor()
-
+    pass
