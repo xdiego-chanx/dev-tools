@@ -1,4 +1,4 @@
-from src.cli.Command import Command
+from typing import Any
 
 
 class CommandBuilder:
@@ -14,8 +14,7 @@ class CommandBuilder:
         self.__flags = {}
         self.__handler = self.__delegate_void
     
-    def as_child_of(self: "CommandBuilder", command: Command) -> "CommandBuilder":
-        self.__parent = command.get_parser()
+    def as_child_of(self: "CommandBuilder", command: Any) -> "CommandBuilder":
         self.__parent_subparsers = command.get_subparsers()
         return self
     
@@ -64,11 +63,11 @@ class CommandBuilder:
         return self
     
     def set_handler(self: "CommandBuilder", function: callable) -> "CommandBuilder":
-        if self.__handler is None:
-            self.__handler = function
+        self.__handler = function
         return self
 
-    def build(self: "CommandBuilder") -> Command:
+    def build(self: "CommandBuilder") -> Any:
+        from src.cli.Command import Command
         if not self.__name:
             raise ValueError("Missing command name")
         if self.__final and self.__handler == self.__delegate_void:

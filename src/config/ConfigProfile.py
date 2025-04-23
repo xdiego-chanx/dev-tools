@@ -1,5 +1,6 @@
-from dataclasses import dataclass
-from typing import Literal
+from dataclasses import asdict, dataclass
+import json
+from typing import Any, Literal
 
 @dataclass
 class ConfigProfile:
@@ -12,3 +13,17 @@ class ConfigProfile:
     semicolon: bool
     trailing_comma: bool
     spaced_objects: bool
+
+    @classmethod
+    def default(cls: "ConfigProfile") -> "ConfigProfile":
+        return cls(
+            quotes="double",
+            indent="space",
+            bracket_spacing="space",
+            arrow_function_args="parentheses",
+            eol="crlf",
+            tab_width=4,
+            semicolon=True,
+            trailing_comma=False,
+            spaced_objects=True
+        )

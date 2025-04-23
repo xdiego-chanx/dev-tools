@@ -2,12 +2,12 @@ import json
 from json import JSONDecodeError
 import os
 import time
-from typing import IO, Any
+from typing import Any, TextIO
 
 class FileSystem:
 
     @classmethod
-    def touch(cls: "FileSystem", path: str) -> IO[Any]:
+    def touch(cls: "FileSystem", path: str) -> TextIO:
         path = os.path.abspath(path)
 
         if os.path.exists(path) and not os.path.isfile(path):
@@ -21,6 +21,10 @@ class FileSystem:
         os.utime(path, (now, now))
 
         return open(path, "r+", encoding="utf-8")
+    
+    @classmethod
+    def file_exists(path: str) -> bool:
+        return os.path.exists(path) and os.path.isfile(path)
     
     @classmethod
     def read_json(cls: "FileSystem", path: str) -> dict[str, Any]:
@@ -37,5 +41,15 @@ class FileSystem:
                 return json.load(file)
             except JSONDecodeError:
                 raise ValueError(f"File '{path}' does not contain valid JSON.")
-            
-fs = FileSystem()
+    
+    @classmethod 
+    def write_json(cls: "FileSystem", path: str, contents: dict[str, Any]) -> None:
+        path = os.path.abspath(path)
+
+        if not os.path.isfile(path):
+            raise ValueError(f"Path '{path}' already exists and is not a valid JSON file.")
+        
+        file: TextIO = FileSystem.touch(path)
+
+        file.write(json.dumps(contents))
+

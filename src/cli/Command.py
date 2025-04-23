@@ -6,8 +6,6 @@ from src.cli.CommandBuilder import CommandBuilder
 class Command:
     __parser = None
     __subparsers = None
-    __builder = CommandBuilder()
-
     def __init__(self, parser: ArgumentParser, final: bool = False, subcommand: str = None) -> None:
         self.__parser = parser
         if not final:
@@ -18,11 +16,13 @@ class Command:
             self.__subparsers = None
 
     @classmethod
-    def builder(self) -> CommandBuilder:
-        return self.__builder
+    def builder(cls: "Command") -> "CommandBuilder":
+        from src.cli.CommandBuilder import CommandBuilder
+        return CommandBuilder()
+
 
     def get_parser(self) -> ArgumentParser:
         return self.__parser
 
-    def get_subparsers(self) -> _SubParsersAction[ArgumentParser]:
+    def get_subparsers(self) -> _SubParsersAction:
         return self.__subparsers
