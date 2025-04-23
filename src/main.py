@@ -10,7 +10,7 @@ subparsers = parser.add_subparsers()
 def main():
     cli = CommandTree()
 
-    settings = (
+    config = (
         Command.builder()
         .as_child_of(cli.get_root())
         .with_name("settings")
@@ -18,10 +18,10 @@ def main():
         .build()
     )
 
-    settings_set = (
+    config_set = (
         Command.builder()
         .final()
-        .as_child_of(settings)
+        .as_child_of(config)
         .with_name("set")
         .with_help("Change a setting by changing its value")
         .add_string_arg("name", help="The name of the setting to modify")
@@ -30,10 +30,10 @@ def main():
         .build()
     )
 
-    settings_get = (
+    config_get = (
         Command.builder()
         .final()
-        .as_child_of(settings)
+        .as_child_of(config)
         .with_name("get")
         .with_help("Retrieve a setting and print it to the console")
         .add_string_arg("name", help="The name of the setting to retrieve")
