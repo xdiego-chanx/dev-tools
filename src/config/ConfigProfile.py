@@ -3,15 +3,14 @@ from typing import Literal
 
 @dataclass
 class ConfigProfile:
-    quotes: Literal["single", "double"]
+    quotes: Literal["smart", "single", "double"]
     indent: Literal["tab", "space"]
     bracket_spacing: Literal["tight", "space", "newline"]
-    arrow_function_args: Literal["parentheses", "omit"]
     eol: Literal["cr", "lf", "crlf"]
     tab_width: int
-    semicolon: bool
+    semicolon: Literal["smart", "use", "avoid"]
     trailing_comma: bool
-    spaced_objects: bool
+    spaced_objects: bool 
 
     @classmethod
     def default(cls: type["ConfigProfile"]) -> "ConfigProfile":
@@ -19,7 +18,6 @@ class ConfigProfile:
             quotes="double",
             indent="space",
             bracket_spacing="space",
-            arrow_function_args="parentheses",
             eol="crlf",
             tab_width=4,
             semicolon=True,
