@@ -1,40 +1,82 @@
 from dataclasses import asdict
-import os
 from typing import Any
 
 from src.config.ConfigProfile import ConfigProfile
+from src.util.ImportMeta import ImportMeta
 from src.util.FileSystem import FileSystem
 from src.util.Console import Console
 
 class ConfigCommands:
     __default_config: dict[str, Any] = asdict(ConfigProfile.default())
-    __fs = FileSystem()
-    __console: Console = Console()
-    __config_path: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "config.json"))
 
-    def set_config_property(self: "ConfigCommands", name: str, value: str) -> None:
+    meta = ImportMeta.instance()
+    console = Console.instance()
+
+    def set_config_property(self: type["ConfigCommands"], **kwargs) -> None:
+        try:
+            name = str(kwargs.get("name"))
+            value = str(kwargs.get("value"))
+        except KeyError:
+            self.console.error("Required arguments 'name' and 'value' incorrectly passed to handler.")
+            return
+
         if name not in self.__default_config:
-            self.__console.error(f"'{name}' is not a valid config option.")
+            self.console.error(f"'{name}' is not a valid config option.")
             return
         
-        if self.__fs.file_exists(self.__config_path):
-            config_json: dict[str, Any] = self.__fs.read_json(self.__config_path)
-            config_json[name] = value
-            self.__fs.write_json(self.__config_path, config_json)
+        if FileSystem.file_exists(self.meta.config_path):
+            config_json: dict[str, Any] = FileSystem.read_json(self.meta.config_path) or self.__default_config.copy()
         else: 
-            new_config_json = self.__default_config.copy()
-            self.__fs.write_json(self.__config_path, new_config_json)
+            config_json = self.__default_config.copy()
 
-        self.__console.log("Property '{name}' was set to '{value}'")
+        default_value = self.__default_config[name]
+
+        if isinstance(default_value, int):
+            value = int(value)
+        elif isinstance(default_value, float):
+            value = float(value)
+        elif isinstance(default_value, bool):
+            value = not not value
+        else:
+            value = str(value)
+
+        if config_json[name] == value:
+            self.console.log(f"Property '{name}' already has a value of '{value}'")
+            return
+
+        config_json[name] = value
+        FileSystem.write_json(self.meta.config_path, config_json)
+
+        self.console.log(f"Property '{name}' was set to '{value}'")
         return
 
-    def get_config_property(self: "ConfigCommands", name: str) -> Any:
-        if name not in self.__default_config:
-            self.__console.error(f"'{name}' is not a valid config option.")
+    def get_config_property(self: type["ConfigCommands"], **kwargs) -> None:
+        try:
+            name = str(kwargs.get("name"))
+        except KeyError:
+            self.console.error("Required argument 'name' incorrectly passed to handler.")
             return
-        if not self.__fs.file_exists(self.__config_path):
-            new_config_json = self.__default_config.copy()
-            self.__fs.write_json(self.__config_path, new_config_json)
-            self.__console.log(f"'{name}': '{self.__default_config[name]}'")
+        
+        if name not in self.__default_config:
+            self.console.error(f"'{name}' is not a valid config option.")
+            return
+        
+        if FileSystem.file_exists(self.meta.config_path):
+            config_json = FileSystem.read_json(self.meta.config_path)
+            if not config_json:
+                config_json = self.__default_config.copy()
+                FileSystem.write_json(self.meta.config_path, config_json)
+        else:
+            config_json = self.__default_config.copy()
+            FileSystem.write_json(self.meta.config_path, config_json)
+        
+        value = config_json[name]
+
+        if isinstance(value, str):
+            value = f"'{value}'"
+        if isinstance(value, bool):
+            value = str(value).lower()
+
+        self.console.log(f"{name}: {value}")
         return
         

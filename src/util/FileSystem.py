@@ -7,7 +7,7 @@ from typing import Any, TextIO
 class FileSystem:
 
     @classmethod
-    def touch(cls: "FileSystem", path: str) -> TextIO:
+    def touch(cls: type["FileSystem"], path: str) -> TextIO:
         path = os.path.abspath(path)
 
         if os.path.exists(path) and not os.path.isfile(path):
@@ -23,11 +23,11 @@ class FileSystem:
         return open(path, "r+", encoding="utf-8")
     
     @classmethod
-    def file_exists(path: str) -> bool:
+    def file_exists(cls: type["FileSystem"], path: str) -> bool:
         return os.path.exists(path) and os.path.isfile(path)
     
     @classmethod
-    def read_json(cls: "FileSystem", path: str) -> dict[str, Any]:
+    def read_json(cls: type["FileSystem"], path: str) -> dict[str, Any]:
         path = os.path.abspath(path)
 
         if not os.path.exists(path) or not os.path.isfile(path):
@@ -40,16 +40,18 @@ class FileSystem:
             try:
                 return json.load(file)
             except JSONDecodeError:
+                if not file.read():
+                    return None
                 raise ValueError(f"File '{path}' does not contain valid JSON.")
     
     @classmethod 
-    def write_json(cls: "FileSystem", path: str, contents: dict[str, Any]) -> None:
+    def write_json(cls: type["FileSystem"], path: str, contents: dict[str, Any]) -> None:
         path = os.path.abspath(path)
 
-        if not os.path.isfile(path):
+        if os.path.exists(path) and not os.path.isfile(path):
             raise ValueError(f"Path '{path}' already exists and is not a valid JSON file.")
         
         file: TextIO = FileSystem.touch(path)
 
-        file.write(json.dumps(contents))
+        file.write(json.dumps(contents, indent=4))
 

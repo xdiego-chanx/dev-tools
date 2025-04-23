@@ -14,6 +14,6 @@ class CommandTree:
     def start(self: "CommandTree") -> None:
         args = self.get_root().get_parser().parse_args()
         if hasattr(args, "func"):
-            args.func(*vars(args).values())
+            args.func(**vars(args))
         else:
             self.get_root().get_parser().print_help()

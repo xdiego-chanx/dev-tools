@@ -6,19 +6,34 @@ class Console:
     __green = "\033[32m"
     __red = "\033[31m"
 
-    def log(self, *args, sep: str = " ", end: str = "\n") -> None:
-        print(f"{self.__white}{sep.join(map(str, args))}{self.__reset}", end=end)
+    __instance: "Console" = None
 
-    def debug(self, *args, sep: str = " ", end: str = "\n") -> None:
-        print(f"{self.__green}{sep.join(map(str, args))}{self.__reset}", end=end)
+    def __init__(self) -> None:
+        if Console.__instance is not None:
+            raise RuntimeError("Use Console.instance() instead")
 
-    def info(self, *args, sep: str = " ", end: str = "\n") -> None:
-        print(f"{self.__cyan}{sep.join(map(str, args))}{self.__reset}", end=end)
+    @classmethod
+    def instance(cls: type["Console"]) -> "Console":
+        if cls.__instance is None:
+            cls.__instance = Console()
+        return cls.__instance
 
-    def warn(self, *args, sep: str = " ", end: str = "\n") -> None:
-        print(f"{self.__yellow}{sep.join(map(str, args))}{self.__reset}", end=end)
+    @classmethod
+    def log(cls: type["Console"], *args, sep: str = " ", end: str = "\n") -> None:
+        print(f"{cls.__white}{sep.join(map(str, args))}{cls.__reset}", end=end)
 
-    def error(self, *args, sep: str = " ", end: str = "\n") -> None:
-        print(f"{self.__red}{sep.join(map(str, args))}{self.__reset}", end=end)
+    @classmethod
+    def debug(cls: type["Console"], *args, sep: str = " ", end: str = "\n") -> None:
+        print(f"{cls.__green}{sep.join(map(str, args))}{cls.__reset}", end=end)
 
-console = Console()
+    @classmethod
+    def info(cls: type["Console"], *args, sep: str = " ", end: str = "\n") -> None:
+        print(f"{cls.__cyan}{sep.join(map(str, args))}{cls.__reset}", end=end)
+
+    @classmethod
+    def warn(cls: type["Console"], *args, sep: str = " ", end: str = "\n") -> None:
+        print(f"{cls.__yellow}{sep.join(map(str, args))}{cls.__reset}", end=end)
+
+    @classmethod
+    def error(cls: type["Console"], *args, sep: str = " ", end: str = "\n") -> None:
+        print(f"{cls.__red}{sep.join(map(str, args))}{cls.__reset}", end=end)

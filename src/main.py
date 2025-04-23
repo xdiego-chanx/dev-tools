@@ -15,7 +15,7 @@ def main():
     config = (
         Command.builder()
         .as_child_of(cli.get_root())
-        .with_name("settings")
+        .with_name("config")
         .with_help("Read or modify the CLI's settings.")
         .build()
     )
