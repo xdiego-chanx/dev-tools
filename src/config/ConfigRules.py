@@ -9,7 +9,7 @@ class ConfigRules:
     default_config = ConfigProfile.default()
     config: ConfigProfile
 
-    quotes: str
+    quote: str
     indent: str
     semicolon: str
     bracket_space: str
@@ -27,9 +27,9 @@ class ConfigRules:
         if self.config.quotes == "smart":
             pass # create language profiles
         elif self.config.quotes == "double":
-            self.quotes = '"'
+            self.quote = '"'
         elif self.config.quotes == "single":
-            self.quotes = "'"
+            self.quote = "'"
 
         # tab width (only for space)
         tab_width = self.default_config.tab_width if self.config.tab_width <= 0 else self.config.tab_width
@@ -40,6 +40,14 @@ class ConfigRules:
         elif self.config.indent == "space":
             self.indent = " " * tab_width
         
+        # EOL sequence
+        if self.config.eol == "cr":
+            self.eol = "\r"
+        elif self.config.eol == "lf":
+            self.eol = "\n"
+        elif self.config.eol == "crlf":
+            self.eol = "\r\n"
+        
         # bracket spacing
         if self.config.bracket_spacing == "smart":
             pass # create language profiles
@@ -48,15 +56,7 @@ class ConfigRules:
         elif self.config.bracket_spacing == "space":
             self.bracket_space = " "
         elif self.config.bracket_spacing == "newline":
-            self.bracket_space = "\n"
-        
-        # EOL sequence
-        if self.config.eol == "cr":
-            self.eol = "\r"
-        elif self.config.eol == "lf":
-            self.eol = "\n"
-        elif self.config.eol == "crlf":
-            self.eol = "\r\n"
+            self.bracket_space = self.eol
 
         self.semicolon = ";" if self.config.semicolon else ""
         self.trailing_comma = "," if self.config.trailing_comma else ""
