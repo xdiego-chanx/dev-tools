@@ -8,7 +8,6 @@ class CommandBuilder:
         self.__final = None
         self.__name = None
         self.__help = None
-        # self.__parent = None
         self.__parent_subparsers = None
         self.__string_args = {}
         self.__flags = {}
@@ -57,7 +56,7 @@ class CommandBuilder:
             raise ValueError(f"Flag '{name}' already exists.")
         
         self.__flags[name] = {
-            "name": [name, abbr],
+            "name": list(filter(None, [name, abbr])),
             "help": help
         }
         return self

@@ -7,6 +7,13 @@ from typing import Any, TextIO
 class FileSystem:
 
     @classmethod
+    def split_path(cls: type["FileSystem"], path: str, flat: bool) -> tuple[str, str]:
+        if flat:
+            return (os.path.abspath(os.path.dirname(path)), os.path.basename(path))
+        else:
+            return (os.path.abspath(path), os.path.basename(path))
+
+    @classmethod
     def touch(cls: type["FileSystem"], path: str) -> TextIO:
         path = os.path.abspath(path)
 

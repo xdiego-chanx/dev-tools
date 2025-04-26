@@ -4,7 +4,7 @@ import os
 class ImportMeta:
     __instance: "ImportMeta" = None
 
-    config_path = os.path.abspath(os.path.dirname(__file__), "..", "..", "config.json")
+    config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "config.json"))
 
     def __init__(self) -> None:
         if ImportMeta.__instance is not None:
