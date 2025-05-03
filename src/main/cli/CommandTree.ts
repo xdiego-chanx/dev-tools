@@ -10,10 +10,10 @@ export class CommandTree {
     public start() {
         const args = process.argv.slice(2);
         const next = args[0];
-        CommandTree.root.subcommands.forEach((command, name) => {
-            if(name === next) {
-                command.parse(args.slice(1));
-            }
-        });
+        if (CommandTree.root.subcommands.has(next)) {
+            const subcommand = CommandTree.root.subcommands.get(next)!;
+            subcommand.parse(args.slice(1));
+            return;
+        }
     }
 }

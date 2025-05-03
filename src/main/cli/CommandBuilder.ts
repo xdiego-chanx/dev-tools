@@ -1,6 +1,6 @@
 import { Argument } from "./Argument";
 import { Command } from "./Command";
-import { Flag } from "./Flag";
+import { Named } from "./Named";
 import { Positional } from "./Positional";
 
 export class CommandBuilder {
@@ -9,7 +9,7 @@ export class CommandBuilder {
     private help!: string;
     private parent!: Command;
     private positionals: Set<Positional> = new Set<Positional>();
-    private flags: Set<Flag> = new Set<Flag>();
+    private named: Set<Named<boolean | string>> = new Set<Named<boolean | string>>();
 
     public childOf(parent: Command): CommandBuilder {
         this.parent = parent;
@@ -36,8 +36,8 @@ export class CommandBuilder {
             case arg instanceof Positional:
                 this.positionals.add(arg);
                 break;
-            case arg instanceof Flag:
-                this.flags.add(arg);
+            case arg instanceof Named:
+                this.named.add(arg);
                 break;
         }
         return this;
@@ -62,7 +62,7 @@ export class CommandBuilder {
             this.help,
             this.abbr,
             this.positionals,
-            this.flags
+            this.named
         );
 
         this.parent.subcommands.set(command.name!, command);
