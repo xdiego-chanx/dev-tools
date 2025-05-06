@@ -8,12 +8,6 @@ export class CommandTree {
     );
 
     public start() {
-        const args = process.argv.slice(2);
-        const next = args[0];
-        if (CommandTree.root.subcommands.has(next)) {
-            const subcommand = CommandTree.root.subcommands.get(next)!;
-            subcommand.parse(args.slice(1));
-            return;
-        }
+        CommandTree.root.traverse(process.argv.slice(1));
     }
 }

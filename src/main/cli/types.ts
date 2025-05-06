@@ -1,2 +1,2 @@
-type ArgK = number | string;
-type ArgV = string | boolean;
+type ArgK = string;
+type ArgV = number | string | boolean;

@@ -1,71 +1,75 @@
-import { Argument } from "./Argument";
+import { BuilderError } from "@main/error";
 import { Command } from "./Command";
 import { Named } from "./Named";
 import { Positional } from "./Positional";
+import { Argument } from "./Argument";
 
 export class CommandBuilder {
-    private name!: string;
-    private abbr?: string;
-    private help!: string;
+    private command: Command;
     private parent!: Command;
-    private positionals: Set<Positional> = new Set<Positional>();
-    private named: Set<Named<boolean | string>> = new Set<Named<boolean | string>>();
 
-    public childOf(parent: Command): CommandBuilder {
-        this.parent = parent;
+    constructor() {
+        this.command = new Command();
+    }
+    
+    public childOf(command: Command): CommandBuilder {
+        this.parent = command;
         return this;
     }
 
     public setName(name: string): CommandBuilder {
-        this.name = name;
+        this.command.name = name;
         return this;
     }
 
     public setHelp(help: string): CommandBuilder {
-        this.help = help;
-        return this;
-    } 
-
-    public setAbbr(abbr: string): CommandBuilder {
-        this.abbr = abbr;
+        this.command.help = help;
         return this;
     }
+
+    public setObserver(observer: (args?: Map<ArgK, ArgV>) => any): CommandBuilder {
+        this.command.observer = observer;
+        return this;
+    }
+    
 
     public addArgument(arg: Argument): CommandBuilder {
-        switch(true) {
+        switch (true) {
             case arg instanceof Positional:
-                this.positionals.add(arg);
+                this.command.positionals.push(arg);
                 break;
             case arg instanceof Named:
-                this.named.add(arg);
+                this.command.named.push(arg);
                 break;
+            default:
+                throw new BuilderError("Unknown argument type");
         }
+
         return this;
     }
 
-
-    build(): Command {
-        if(!this.name) {
-            throw new Error("Command name must be defined before build.");
-        }
-
-        if(!this.help) {
-            throw new Error("Command help message must be defined before build.");
-        }
-
+    public build(): Command {
         if(!this.parent) {
-            throw new Error("Non-root command must have a parent.");
+            throw new BuilderError("Non-root command must have a parent")
+        }
+        if(!this.command.name) {
+            throw new BuilderError("Required property 'name' is missing a value");
+        }
+        if (this.parent.subcommands.has(this.command.name)) {
+            throw new BuilderError(`Subcommand '${this.command.name}' is already part of '${this.parent.name}'`);
+        } 
+        if(!this.command.help) {
+            throw new BuilderError("Required property 'help' is missing a value");
         }
 
-        const command = new Command(
-            this.name,
-            this.help,
-            this.abbr,
-            this.positionals,
-            this.named
-        );
+        if(this.command.observer === Command.NO_OBSERVER) {
+            throw new BuilderError("Required property 'observer' is missing a value")
+        }
 
-        this.parent.subcommands.set(command.name!, command);
-        return command;
+        this.command.named.push(new Named("help", "Get information about the current command", false, "-h"));
+
+        this.parent.subcommands.set(this.command.name, this.command);
+
+        return this.command;
     }
 }
