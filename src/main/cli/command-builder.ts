@@ -1,8 +1,8 @@
 import { BuilderError } from "@main/error";
-import { Command } from "./Command";
-import { Named } from "./Named";
-import { Positional } from "./Positional";
-import { Argument } from "./Argument";
+import { Command } from "./command";
+import { Named } from "./named";
+import { Positional } from "./positional";
+import { Argument } from "./argument";
 
 export class CommandBuilder {
     private command: Command;
@@ -27,7 +27,7 @@ export class CommandBuilder {
         return this;
     }
 
-    public setObserver(observer: (args?: Map<ArgK, ArgV>) => any): CommandBuilder {
+    public setObserver(observer: (args: Map<ArgK, ArgV>) => any): CommandBuilder {
         this.command.observer = observer;
         return this;
     }

@@ -1,5 +1,8 @@
 // #! /usr/bin/env node
 import { Command, CommandTree, Named, Positional } from "./cli";
+import { NestCommands } from "./nest/nest-commands";
+
+const nestCommands: NestCommands = new NestCommands();
 
 const cli: CommandTree = new CommandTree();
 
@@ -17,7 +20,7 @@ const nestResource: Command = Command.builder()
     .setHelp("Create a NestJS resource with a controller, service and module.")
     .addArgument(new Positional("path", "The path where the resource should be created", 0))
     .addArgument(new Named<boolean>("flat", "Create all files on the specified path, without creating a new folder",  false, "-f"))
-    .setObserver(() => undefined)
+    .setObserver(nestCommands.createResource)
     .build();
 
 const nestModule: Command = Command.builder()

@@ -1,2 +1,2 @@
-export * from "./BuilderError";
-export * from "./TraverseError";
+export * from "./builder-error";
+export * from "./traverse-error";

@@ -1,4 +1,4 @@
-import { Argument } from "./Argument";
+import { Argument } from "./argument";
 
 export class Positional extends Argument {
     public position: number;

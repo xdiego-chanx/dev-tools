@@ -1,4 +1,4 @@
-import { Command } from "@main/cli/Command";
+import { Command } from "@main/cli/command";
 import { describe } from "node:test";
 
 describe("Command", () => {

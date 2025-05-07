@@ -1,4 +1,4 @@
-import { Argument } from "./Argument";
+import { Argument } from "./argument";
 
 export class Named<T extends ArgV> extends Argument {
     public flag: string;

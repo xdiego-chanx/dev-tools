@@ -1,5 +1,5 @@
 import path from "path";
-import { Command } from "./Command";
+import { Command } from "./command";
 
 export class CommandTree {
     public static readonly root: Command = new Command(

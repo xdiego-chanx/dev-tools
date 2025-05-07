@@ -1,7 +1,7 @@
 import { TraverseError } from "@main/error";
-import { Positional } from "./Positional";
-import { Named } from "./Named";
-import { CommandBuilder } from "./CommandBuilder";
+import { Positional } from "./positional";
+import { Named } from "./named";
+import { CommandBuilder } from "./command-builder";
 import { Logger } from "@main/lib";
 
 export class Command {
@@ -9,7 +9,7 @@ export class Command {
     public static NO_OBSERVER: () => null = () => null;
     public name: string;
     public help: string;
-    public observer: (args?: Map<ArgK, ArgV>) => any;
+    public observer: (args: Map<ArgK, ArgV>) => any;
 
     public positionals: Array<Positional>;
     public named: Array<Named<ArgV>>
@@ -19,8 +19,8 @@ export class Command {
 
     constructor()
     constructor(name: string, help: string)
-    constructor(name: string, help: string, observer: (args?: Map<ArgK, ArgV>) => any)
-    constructor(name?: string, help?: string, observer?: (args?: Map<ArgK, ArgV>) => any) {
+    constructor(name: string, help: string, observer: (args: Map<ArgK, ArgV>) => any)
+    constructor(name?: string, help?: string, observer?: (args: Map<ArgK, ArgV>) => any) {
         this.name = name ?? "";
         this.help = help ?? "";
         this.observer = observer || Command.NO_OBSERVER;
@@ -79,7 +79,7 @@ export class Command {
     }
 
     public traverse(args: Array<string>): void {
-        if(args.length == 0) {
+        if (args.length == 0) {
             throw new TraverseError("Reached end of branch without finding command.");
         }
         if (args.length >= 2) {
@@ -173,7 +173,11 @@ export class Command {
                             throw new TypeError("Argument '" + key + "' expects a switch (true/false || on/off). got 'string' instead.");
                         }
                     } else {
-                        this.argumentMap.set(named.name, true);
+                        if(key) {
+                            this.argumentMap.set(named.name, true);
+                        } else {
+                            this.argumentMap.set(named.name, named.def);
+                        }
                     }
                     break;
 
