@@ -1,5 +1,4 @@
-import { interruptible, requires } from "@main/lib/decorators";
-import path from "path";
+import { interruptible, requires } from "@lib/decorators";
 
 export class NestCommands {
     
@@ -7,12 +6,55 @@ export class NestCommands {
     @requires("path")
     @requires("flat")
     public createResource(args: Map<ArgK, ArgV>): void {
-        const relpath: string = args.get("path") as string;
-        const flat: boolean = args.get("flat") as boolean;
 
-        console.log(relpath);
-        console.log(flat)
+    }
 
-        const abspath: string = path.resolve(relpath);
+    
+    @interruptible()
+    @requires("path")
+    @requires("flat")
+    public createModule(args: Map<ArgK, ArgV>): void {
+
+    }
+
+    
+    @interruptible()
+    @requires("path")
+    @requires("flat")
+    public createController(args: Map<ArgK, ArgV>): void {
+
+    }
+
+    
+    @interruptible()
+    @requires("path")
+    @requires("flat")
+    public createService(args: Map<ArgK, ArgV>): void {
+
+    }
+
+    
+    @interruptible()
+    @requires("path")
+    @requires("flat")
+    @requires("orm")
+    public createEntity(args: Map<ArgK, ArgV>): void {
+
+    }
+
+    
+    @interruptible()
+    @requires("path")
+    @requires("flat")
+    public createProject(args: Map<ArgK, ArgV>): void {
+
+    }
+
+    
+    @interruptible()
+    @requires("path")
+    @requires("flat")
+    public createMicroservice(args: Map<ArgK, ArgV>): void {
+
     }
 }

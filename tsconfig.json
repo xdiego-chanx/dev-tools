@@ -10,6 +10,12 @@
             "@main/*": [
                 "./src/main/*"
             ],
+            "@lib/*": [
+                "./src/main/lib/*"
+            ],
+            "@error/*": [
+                "./src/main/error"
+            ],
             "@test/*": [
                 "./src/test/*"
             ]

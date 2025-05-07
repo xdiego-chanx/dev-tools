@@ -6,7 +6,7 @@ import { Logger } from "@main/lib";
 
 export class Command {
     public logger: Logger = Logger.instance;
-    public static NO_OBSERVER: () => null = () => null;
+    public static NO_OBSERVER = () => Logger.instance.warn("Warning: Command observer not implemented");
     public name: string;
     public help: string;
     public observer: (args: Map<ArgK, ArgV>) => any;

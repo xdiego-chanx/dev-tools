@@ -62,10 +62,6 @@ export class CommandBuilder {
             throw new BuilderError("Required property 'help' is missing a value");
         }
 
-        if(this.command.observer === Command.NO_OBSERVER) {
-            throw new BuilderError("Required property 'observer' is missing a value")
-        }
-
         this.command.named.push(new Named("help", "Get information about the current command", false, "-h"));
 
         this.parent.subcommands.set(this.command.name, this.command);
