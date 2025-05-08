@@ -1,0 +1,1 @@
+export const TAB: string = " ".repeat(4);

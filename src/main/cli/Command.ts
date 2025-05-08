@@ -95,7 +95,7 @@ export class Command {
         }
     }
 
-    public parse(args: Array<string>) {
+    public parse(args: string[]): void {
         if (["--help", "-h"].includes(args[0])) {
             if (args.length == 1) {
                 this.logger.log(this.buildHelpString());
@@ -104,86 +104,73 @@ export class Command {
                 throw new TraverseError("Help command takes no additional arguments.")
             }
         }
+
         this.positionals.sort((a, b) => a.position - b.position);
         this.positionals = this.positionals.map((positional, i) => {
             positional.position = i;
             return positional;
         });
 
-        const positionalArguments = args.slice(0, this.positionals.length);
-        const namedArguments = args.slice(this.positionals.length);
+
+        const passedPositionals = args.slice(0, this.positionals.length);
+        const passedNamed = args.slice(this.positionals.length);
 
         this.positionals.forEach((positional, i) => {
-            this.argumentMap.set(positional.name, positionalArguments[i])
+            this.argumentMap.set(positional.name, passedPositionals[i])
         });
 
         this.named.forEach((named) => {
-            const argument = namedArguments.find((arg) => arg == named.abbr || arg == named.flag);
-            if (!argument) {
+            const entry = passedNamed.find((arg) => {
+                return arg.removeSuffix(/=[\w\-]*/) === named.flag || arg.removeSuffix(/=[\w\-]*/) === named.abbr
+            });
+            if(!entry) {
+                this.argumentMap.set(named.name, named.def);
                 return;
             }
-            const index = namedArguments.indexOf(argument);
 
-            let key: string | undefined = undefined;
-            let value: string | undefined = undefined;
+            const i = passedNamed.findIndex((arg) => {
+                return arg.removeSuffix(/=[\w\-]*/) === named.flag || arg.removeSuffix(/=[\w\-]*/) === named.abbr
+            }) + 1;
 
-            switch (typeof named.def) {
-                case "number":
-                    if (argument.includes("=")) {
-                        [key, value] = argument.split("=");
-                    } else {
-                        [key, value] = [argument, namedArguments[index + 1]];
-                    }
+            let [arg, value]: [string, string] = ["", ""];
 
-                    if (!value) {
-                        throw new TypeError("Required argument '" + named.name + "' is missing a value.")
-                    }
+            if (entry.indexOf("=") >= 0) {
+                [arg, value] = entry.split("=");
+            } else if (i < args.length && !this.named.find((arg) => arg.flag === args[i] || arg.abbr === args[i])) {
+                [arg, value] = [entry, args[i]]
+            }
 
-                    if (Number.isNaN(parseFloat(value))) {
-                        throw new TypeError("Argument '" + key + "' expects a number. got 'string' instead.");
-                    }
-                    this.argumentMap.set(named.name, parseFloat(value));
-                    break;
-
+            switch(typeof named.def) {
                 case "string":
-                    if (argument.includes("=")) {
-                        [key, value] = argument.split("=");
-                    } else {
-                        [key, value] = [argument, namedArguments[index + 1]];
-                    }
-
                     if (!value) {
                         throw new TypeError("Required argument '" + named.name + "' is missing a value.")
                     }
-
                     this.argumentMap.set(named.name, value);
                     break;
 
-                case "boolean":
-                    if (argument.includes("=")) {
-                        [key, value] = argument.split("=");
+                case "number":
+                    if (!value) {
+                        throw new TypeError("Required argument '" + named.name + "' is missing a value.");
                     }
-
-                    if (value) {
-                        if (["true", "on"].includes(value)) {
+                    if(Number.isNaN(parseFloat(value))) {
+                        throw new TypeError("Argument '" + arg + "' expects a number but got 'string'");
+                    }
+                    this.argumentMap.set(named.name, parseFloat(value));
+                    break;
+                case "boolean":
+                    if(!value) {
+                        this.argumentMap.set(named.name, true);
+                    } else {
+                        if (["true", "on"].includes(value.trim().toLowerCase())) {
                             this.argumentMap.set(named.name, true);
-                        } else if (["false", "off"].includes(value)) {
+                        } else if (["false", "off"].includes(value.trim().toLowerCase())) {
                             this.argumentMap.set(named.name, false);
                         } else {
-                            throw new TypeError("Argument '" + key + "' expects a switch (true/false || on/off). got 'string' instead.");
-                        }
-                    } else {
-                        if(key) {
-                            this.argumentMap.set(named.name, true);
-                        } else {
-                            this.argumentMap.set(named.name, named.def);
+                            throw new TypeError("Unknown boolean option '" + value + "'");
                         }
                     }
                     break;
-
-                default:
-                    throw new TypeError("Argument of type '" + typeof named.def + "' is not assignable to parameter of type 'number | string | boolean'.");
-            }
+                }
         });
 
         this.observer(this.argumentMap);

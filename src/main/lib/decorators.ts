@@ -2,10 +2,20 @@ import { Logger } from "./logger";
 
 const logger: Logger = Logger.instance;
 
+// function interruptible() {
+//     return function(target: any, key: string, descriptor: PropertyDescriptor) {
+//       const original = descriptor.value;
+//       descriptor.value = function(...args: any[]) {
+//         return original.apply(this, args); // ✅ keeps `this`
+//       };
+//     };
+//   }
+  
+
 export function interruptible() {
     return function (_: any, __: string, descriptor: PropertyDescriptor) {
-        const originalMethod = descriptor.value;
-
+        const original = descriptor.value;
+        
         descriptor.value = function (...args: any[]) {
             const handleInterrupt = () => {
                 logger.error("Operation interrupted by user.");
@@ -15,7 +25,7 @@ export function interruptible() {
             process.once("SIGINT", handleInterrupt);
 
             try {
-                return originalMethod.apply(this, args);
+                return original.apply(this, args);
             } finally {
                 process.off("SIGINT", handleInterrupt);
             }
@@ -40,7 +50,7 @@ export function requires(key: string) {
                 throw new Error(`Missing required argument '${key}' in method '${property}'`);
             }
 
-            return originalMethod.call(this, args, ...rest);
+            return originalMethod.apply(this, [args, ...rest]);
         };
 
         return descriptor;
